@@ -117,6 +117,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="pole_StatManager.cs" />
     <Compile Include="pole_RPC.cs" />
     <Compile Include="pole_ReadWrite.cs" />
     <Compile Include="pole_Bill.cs" />

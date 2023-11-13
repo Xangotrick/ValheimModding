@@ -30,6 +30,7 @@ using pole_viking;
 using pole_UI;
 using static pole_UI.UIX;
 using pole_ReadWrite;
+using pole_StatManager;
 
 namespace pole_jobs
 {
@@ -105,6 +106,7 @@ namespace pole_jobs
                 {
                     UI.job_overlay_timestamp_show = Time.time;
                 }
+                StatManager.BuildList();
                 _xp = value;
                 Save();
             }
@@ -233,6 +235,7 @@ namespace pole_jobs
         public string name;
         public int[] xpcaps = new int[] { 1, 1000, 3000, 6000, 10000, 15000, 21000, 28000, 36000, 45000, 55000, 66000, 78000, 91000, 105000, 120000, 136000, 153000, 171000, 190000 };
         public string[][] levelscorecaps = new string[20][];
+        public StatMod[][] levelstatmods = new StatMod[20][];
         public string[] descriptions = new string[20];
 
         public Job(string aname)
@@ -243,12 +246,12 @@ namespace pole_jobs
             for (int i = 0; i < xpcaps.Length; i++)
             {
                 levelscorecaps[i] = new string[] { ";0" };
+                levelstatmods[i] = new StatMod[] { new StatMod("null", 0) };
             }
         }
 
         public int levelbyxp(int xp)
         {
-            int returner = 0;
             for (int i = 0; i < xpcaps.Length; i++)
             {
                 if (xp < xpcaps[i])
@@ -266,6 +269,9 @@ namespace pole_jobs
             Job Mineur = new Job("Mineur");
             Mineur.descriptions[0] = "La saga de $$$, Maître des Mines de Midgard commence! Loin de votre futures richesses à en rendre jaloux les nains, vos débuts sont humbles. Découvrez les richesses de la terre!";
             Mineur.descriptions[1] = "Après avoir bravé les effrois de la nuit, le fier $$$, Briseur de roches, fut récompensé de la plus rare des pierres, une Pierre de Lune!";
+
+            Mineur.levelstatmods[2] = new StatMod[] { new StatMod("max_health", 22) };
+            Mineur.levelstatmods[3] = new StatMod[] { new StatMod("max_stamina", 22), new StatMod("max_pod", 200) };
 
             Mineur.levelscorecaps[3] = new string[] { "A;100", "B;20", "C;30" };
             Mineur.levelscorecaps[4] = new string[] { "B;50", "D;100" };

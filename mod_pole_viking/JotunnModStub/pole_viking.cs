@@ -33,6 +33,7 @@ using static pole_UI.UIX;
 using pole_User;
 using pole_Bill;
 using pole_ReadWrite;
+using pole_StatManager;
 
 using static pole_RPC.RPC;
 
@@ -103,7 +104,9 @@ namespace pole_viking
                 List<string> jobstringlist = jobstring.Split(',').ToList();
                 job_manager_local = new List<JobManager>();
                 foreach(string astring in jobstringlist) { job_manager_local.Add(new JobManager(astring)); }
-                
+                StatManager._bonus = new Bonus(5,5,5,5,5,5);
+                StatManager._jobmanager_list = job_manager_local;
+                StatManager.BuildList();
 
             }
 
@@ -228,7 +231,8 @@ namespace pole_viking
         }
         private void Update()
         {
-            if(isserver)
+            pole_StatManager.StatManager.Update();
+            if (isserver)
             {
                 Update_Server();
             }
