@@ -201,7 +201,7 @@ namespace pole_StatManager
                 {
                     if (!__instance.HaveRider())
                     {
-                        __instance.m_runSpeed = 7 * (1+ StatManager.Get("move_speed");
+                        __instance.m_runSpeed = 7 * (1+ StatManager.Get("move_speed"));
                     }
                 }
             }
@@ -248,6 +248,7 @@ namespace pole_StatManager
                     }
                 }
             }
+            Print();
         }
         
         public static void Add(StatMod mod)
