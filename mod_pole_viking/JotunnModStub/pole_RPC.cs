@@ -36,6 +36,18 @@ using pole_Bill;
 
 namespace pole_RPC
 {
+    public class U
+    {
+        public static void awake()
+        {
+            RPC.MyRPC = NetworkManager.Instance.AddRPC("MyRPC", pole_RPC.RPC.MyRPCServerReceive, pole_RPC.RPC.MyRPCClientReceive);
+        }
+        public static void update()
+        {
+
+        }
+    }
+
     class RPC
     {
         public static CustomRPC MyRPC;

@@ -34,6 +34,18 @@ using static Player;
 
 namespace pole_StatManager
 {
+    public class U
+    {
+        public static void awake()
+        {
+
+        }
+        public static void update()
+        {
+
+        }
+    }
+
     public class Bonus
     {
 
@@ -174,6 +186,13 @@ namespace pole_StatManager
 
             return result;
         }
+        public static Color ToColor(Color color0, Color color30, int value)
+        {
+            double calcul = (5 * Math.Sin(Math.PI * value / 5) * (1 / Math.PI)) + value;
+            calcul *= 1 / 30f;
+            return Color.Lerp(color0, color30, (float)calcul);
+        }            //addfunction
+
     }
 
 
@@ -284,9 +303,6 @@ namespace pole_StatManager
 
         public static void Update()
         {
-            if (Player.m_localPlayer)
-            {
-            }
         }
 
         public static void Print()

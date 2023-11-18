@@ -31,23 +31,55 @@ using pole_UI;
 using static pole_UI.UIX;
 using pole_ReadWrite;
 using pole_StatManager;
+using j_mineur;
 
 namespace pole_jobs
 {
+    public class U
+    {
+        public static void awake()
+        {
+            Job.build_jobs();
+
+
+            if (isserver)
+            {
+            }
+            else
+            {
+
+                string jobstring = rw.load_save_textfile("r", "job.dat", "", JobManager.defaultsavevalue);
+                Debug.Log(jobstring);
+                List<string> jobstringlist = jobstring.Split(',').ToList();
+                job_manager_local = new List<JobManager>();
+                foreach (string astring in jobstringlist) { job_manager_local.Add(new JobManager(astring)); }
+                StatManager._bonus = new Bonus(5, 5, 5, 5, 5, 5);
+                StatManager._jobmanager_list = job_manager_local;
+                StatManager.BuildList();
+
+            }
+
+        }
+        public static void update()
+        {
+
+        }
+    }
     internal class __job: BaseUnityPlugin
     {
-        [HarmonyPatch(typeof(SEMan), nameof(SEMan.ModifyAttack))]
-        private class IncreaseDamageDone
-        {
-            private static void Prefix(SEMan __instance, ref HitData hitData)
-            {
-                
+        //[HarmonyPatch(typeof(ItemDrop.ItemData), nameof(ItemDrop.ItemData.GetDamage))]
+        //private class IncreaseDamageDone
+        //{
+        //    private static void Prefix(ItemDrop.ItemData __instance)
+        //    {
+        //        Debug.Log(__instance.TokenName());
+                /*
                 hitData.m_damage.m_pickaxe *= 1 + 20;
                 hitData.m_damage.m_pierce *= 1;
                 Debug.LogError(hitData.m_damage.m_pickaxe);
-                Debug.LogError(hitData.ToString());
-            }
-        }
+                Debug.LogError(hitData.ToString());*/
+        //    }
+        //}
 
         [HarmonyPatch(typeof(WearNTear), "RPC_Damage")]
         internal class FindMonoDamage
@@ -73,7 +105,13 @@ namespace pole_jobs
                 Debug.LogError(health);
                 if(__instance.name.ToLower().Contains("copper") && health < 0 && job_manager_local[0].level >= 2 && EnvMan.instance.IsNight())
                 {
-                    Imanip.spawnItemMaxStack("CopperOreMoon", 1);
+                    Imanip.spawnItemMaxStack("CopperOreMoon", 1, -1) ;
+                }
+                if (__instance.name.ToLower().Contains("rock") && health < 0)
+                {
+                    Imanip.spawnItemMaxStack("CopperOreMoon", 1, 5);
+                    Imanip.spawnItemMaxStack("CopperOreMoon", 1, 2);
+                    Imanip.spawnItemMaxStack("Rock", 1, 1);
                 }
             }
         }
@@ -266,19 +304,7 @@ namespace pole_jobs
         {
             jobs = new List<Job>();
 
-            Job Mineur = new Job("Mineur");
-            Mineur.descriptions[0] = "La saga de $$$, Maître des Mines de Midgard commence! Loin de votre futures richesses à en rendre jaloux les nains, vos débuts sont humbles. Découvrez les richesses de la terre!";
-            Mineur.descriptions[1] = "Après avoir bravé les effrois de la nuit, le fier $$$, Briseur de roches, fut récompensé de la plus rare des pierres, une Pierre de Lune!";
-
-            Mineur.levelstatmods[2] = new StatMod[] { new StatMod("max_health", 22) };
-            Mineur.levelstatmods[3] = new StatMod[] { new StatMod("max_stamina", 22), new StatMod("max_pod", 200) };
-
-            Mineur.levelscorecaps[3] = new string[] { "A;100", "B;20", "C;30" };
-            Mineur.levelscorecaps[4] = new string[] { "B;50", "D;100" };
-            Mineur.levelscorecaps[5] = new string[] { "F;20", "G;20", "H;20" };
-
-
-            jobs.Add(Mineur);
+            jobs.Add(Mineur.build_job());
         }
         public static Job jobbyname(string aname)
         {
@@ -287,6 +313,23 @@ namespace pole_jobs
                 if (ajob.name == aname) { return ajob; }
             }
             return null;
+        }
+
+        public static string ProbabilityMatrixCalculation(int qualitylevel, string[,] namematrix, float[,] pmatrix)
+        {
+            float randval = UnityEngine.Random.Range(0f, 1f);
+            string[] subarray = new string[namematrix.GetLength(1)];
+            float[] parray = new float[namematrix.GetLength(1)];
+            float sum = 0;
+            for (int k = 0; k < namematrix.GetLength(1); k++)
+            {
+                sum += pmatrix[qualitylevel - 1, k];
+                if(sum > randval)
+                {
+                    return namematrix[qualitylevel - 1, k];
+                }
+            }
+            return namematrix[qualitylevel - 1, namematrix.GetLength(1) -1 ];
         }
     }
 

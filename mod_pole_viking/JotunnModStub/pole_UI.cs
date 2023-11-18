@@ -31,9 +31,23 @@ using pole_jobs;
 using pole_User;
 using pole_Bill;
 using static pole_RPC.RPC;
+using static pole_Data.Data;
+using pole_StatManager;
 
 namespace pole_UI
 {
+
+    public class U
+    {
+        public static void awake()
+        {
+
+        }
+        public static void update()
+        {
+
+        }
+    }
 
     class UIX
     {
@@ -96,10 +110,24 @@ namespace pole_UI
             {
                 if (UI.isMinR(slotrect))
                 {
-                    UI.job_bill_list_pos -= 0.01f * deltamouse;
-                    UI.job_bill_list_pos = Math.Max(0, Math.Min(UI.job_bill_list_pos, 1 - 3f / numoflevels));
+                    UI.job_bill_list_reqpos -= 0.01f * deltamouse;
+                    UI.job_bill_list_reqpos = Math.Max(0, Math.Min(UI.job_bill_list_reqpos, 1 - 3f / numoflevels));
                 }
             }
+
+            float dtchange = 0.001f;
+            float delta = UI.job_bill_list_reqpos - UI.job_bill_list_pos;
+            if (Math.Abs(delta) <= dtchange)
+            {
+                UI.job_bill_list_pos = UI.job_bill_list_reqpos;
+            }
+            else
+            {
+                //UI.job_bill_list_pos += dtchange * Math.Sign(delta);
+                UI.job_bill_list_pos =  Mathf.Lerp(UI.job_bill_list_pos, UI.job_bill_list_reqpos, dtchange*10);
+            }
+            UI.job_bill_list_pos = Math.Max(0, Math.Min(UI.job_bill_list_pos, 1 - 3f / numoflevels));
+
             float levelfloat = 0;
             if (LEVEL == thejob.xpcaps.Length)
             {
@@ -162,7 +190,7 @@ namespace pole_UI
             GUI.backgroundColor = new Color(1, 1, 1);
             TEX_MyPNG["runetube"].wrapMode = TextureWrapMode.Repeat;
             GUI.color = new Color(1, 0.5f, 0);
-            GUI.DrawTextureWithTexCoords(UI.RfromR(0.45f, 0, 0.1f, 1, slotrect), TEX_MyPNG["runetube"], new Rect(0.0f, 0.0f - viewfloat, 1, 1));
+            GUI.DrawTextureWithTexCoords(UI.RfromR(0.45f, 0, 0.1f, 1, slotrect), TEX_MyPNG["runetube"], new Rect(0.0f, 0.0f +2 * viewfloat, 1, 1));
             GUI.color = Color.white;
 
             for (int i = 0; i < numoflevels + 1; i++)
@@ -530,6 +558,7 @@ namespace pole_UI
                 if (currentid >= itemlist.Count) { return; }
                 Rect arect = UI.RfromR(0, i * 1f / numofslots, 1, 1f / numofslots, frame);
                 string itemname = itemlist[currentid];
+                if(!TEX_Icons.ContainsKey(itemname.ToLower().Replace("_", ""))) { Debug.LogError("ERROR ITEM NOT FOUND"); continue; }
                 main.normal.background = TEX_Icons[itemname.ToLower().Replace("_", "")];;
                 GUI.Label(new Rect(arect.x, arect.y, arect.height, arect.height), "", main);
                 Rect mainright = new Rect(arect.x + arect.height, arect.y, arect.width - arect.height, arect.height);
@@ -776,7 +805,116 @@ namespace pole_UI
             }
 
         }
+        public static void ui_upgrade()
+        {
+            Bonus mybonus = StatManager._bonus;
 
+            GUIStyle basiclabelstyle = new GUIStyle(UI.skin1.GetStyle("Label"));
+            basiclabelstyle.normal.background = TEX_white;
+            basiclabelstyle.alignment = TextAnchor.MiddleCenter;
+            basiclabelstyle.font = UI.skin1.font;
+
+            GUIStyle texturelabelstyle = new GUIStyle(UI.skin1.GetStyle("Label"));
+            texturelabelstyle.alignment = TextAnchor.LowerCenter;
+            texturelabelstyle.font = UI.skin1.font;
+
+            GUIStyle buttonstyle = new GUIStyle(UI.skin1.GetStyle("Button"));
+            buttonstyle.font = UI.skin1.font;
+            buttonstyle.normal.background = TEX_white;
+            buttonstyle.onHover.background = TEX_black;
+            buttonstyle.normal.textColor = Color.black;
+            buttonstyle.onHover.textColor = Color.white;
+
+            //affichage du fond
+            Rect lvl_menu_rectangle = UI.RfromCenter(Screen.width / 2, Screen.height / 2, 650f, 400f);
+            texturelabelstyle.normal.background = TEX_MyPNG["bonus_navigation"];
+            GUI.Label(lvl_menu_rectangle, "", texturelabelstyle);
+            //affichage du niveau
+            Rect arect = UI.RfromR(0, 0.05f, 0.50f, 0.125f, lvl_menu_rectangle);
+            GUI.backgroundColor = new Color(0, 0, 0, 0f);
+            basiclabelstyle.normal.textColor = new Color(100f / 255f, 70f / 255f, 30f / 255f, 1);
+            basiclabelstyle.fontSize = 36;
+            GUI.Label(arect, $"NIVEAU  {mybonus._Level}", basiclabelstyle);
+            //affichage des points 
+            arect = UI.RfromR(0.50f, 0.05f, 0.50f, 0.125f, lvl_menu_rectangle);
+            GUI.backgroundColor = new Color(0f, 0f, 0f, 0f);
+            basiclabelstyle.normal.textColor = new Color(100f / 255f, 70f / 255f, 30f / 255f, 1);
+            basiclabelstyle.fontSize = 36;
+            GUI.Label(arect, $"POINTS  {mybonus.RemainingPoints()}", basiclabelstyle);
+
+
+            //affichage de logos par colonne
+            for (int j = 0; j < 5; j++)
+            {
+                float xx = 0.01f * (9f + 17f * j);
+                float yy = 0.01f * 72.5f;
+                float rx = 0.01f * 14f;
+                float ry = 0.01f * 22.75f;
+                arect = UI.RfromR(xx, yy, rx, ry, lvl_menu_rectangle);
+                string adata = "";
+
+                switch ($"{j}")
+                {
+                    case "0": adata = "Santé"; texturelabelstyle.normal.background = TEX_MyPNG["bonus_health"]; break;
+                    case "1": adata = "Stamina"; texturelabelstyle.normal.background = TEX_MyPNG["bonus_stamina"]; break;
+                    case "2": adata = "Eiktr"; texturelabelstyle.normal.background = TEX_MyPNG["bonus_eitr"]; break;
+                    case "3": adata = "Vitesse"; texturelabelstyle.normal.background = TEX_MyPNG["bonus_speed"]; break;
+                    case "4": adata = "Poids"; texturelabelstyle.normal.background = TEX_MyPNG["bonus_poids"]; break;
+                    default: break;
+                }
+                GUI.backgroundColor = new Color(1f, 1f, 1f, 1f);
+                texturelabelstyle.normal.textColor = new Color(100f / 255f, 70f / 255f, 30f / 255f, 1);
+                texturelabelstyle.fontSize = 22;
+                GUI.Box(arect, adata, texturelabelstyle);
+            }
+            for (int j = 0; j < 5; j++)
+            {   // affichage des markers
+                float xx = 0.01f * (9f + 17f * j);
+                float yy = 0.01f * (70f - 1.75f * mybonus.UpgradesInList()[j]);
+                float rx = 0.01f * 14f;
+                float ry = 0.01f * 22.75f;
+
+                arect = UI.RfromR(xx, yy, rx, ry, lvl_menu_rectangle);
+                texturelabelstyle.normal.background = TEX_MyPNG["bonus_marker"];
+                GUI.backgroundColor = new Color(1f, 1f, 1f, 1f);
+                GUI.Label(arect, "", texturelabelstyle);
+            }
+            for (int j = 0; j < 5; j++)
+            {
+                for (int i = 1; i <= 30; i++)
+                {   //affichage des barres de couleurs dégradées
+                    float xx = 0.01f * (11f + 17f * j);
+                    float yy = 0.01f * (70f - 1.75f * i);
+                    float rx = 0.01f * 10f;
+                    float ry = 0.01f * 1.5f;
+                    arect = UI.RfromR(xx, yy, rx, ry, lvl_menu_rectangle);
+                    string adata = $"";
+                    int anumber = mybonus.UpgradesInList()[j];
+
+                    Color acolor = Bonus.ToColor(new Color(1f, 0, 0, 0.8f), new Color(0, 0.8f, 0, 0.7f), i);
+                    if (i > anumber)
+                    {
+                        acolor = new Color(0.1f, 0.1f, 0.1f, 0.5f);
+                    }
+                    GUI.backgroundColor = acolor;
+
+
+                    //changement du niveau sélecté
+                    if (GUI.Button(arect, adata, buttonstyle))
+                    {
+                        switch ($"{j}")
+                        {
+                            case "0": mybonus._Health_bonus = i; break;
+                            case "1": mybonus._Endurance_bonus = i; break;
+                            case "2": mybonus._Eiktr_bonus = i; break;
+                            case "3": mybonus._Speed_bonus = i; break;
+                            case "4": mybonus._Carriable_weight_bonus = i; break;
+                            default: break;
+                        }
+                    }
+                }
+            }
+        }
 
 
     }
@@ -792,6 +930,7 @@ namespace pole_UI
         private static bool _money = false;
         private static bool _cheat = false;
         private static bool _job = false;
+        private static bool _bonus = false;
 
         public static float dt
         {
@@ -831,6 +970,11 @@ namespace pole_UI
             get { return _job; }
             set { _job = value; UI.update_input_lock(); }
         }
+        public static bool bonus
+        {
+            get { return _bonus; }
+            set { _bonus = value; UI.update_input_lock(); }
+        }
 
         public static List<User> money_user_list_order = new List<User>();
 
@@ -841,11 +985,19 @@ namespace pole_UI
         public static string market_fakebill = new Bill("").ToString();
         public static List<int> market_bill_field0 = new List<int>();
 
+        public static float job_bill_list_reqpos = 0;
         public static float job_bill_list_pos = 0;
         public static string job_selected = "";
         public static int job_level_selected = 0;
         public static float job_overlay_timestamp_show = -10000f;
         public static int job_overlay_xpquant;
+        
+        public void awake()
+        {
+
+        }
+        
+        
         public static void market_clean()
         {
             market_fakebill = new Bill("").ToString();
@@ -854,7 +1006,6 @@ namespace pole_UI
             market_bill_list_pos = 0;
             for (int k = 0; k < market_bill_field0.Count; k++) { market_bill_field0[k] = 0; }
         }
-
         public static Rect RfromCenter(float x, float y, float w, float h)
         {
             return new Rect(x - w / 2f, y - h / 2f, w, h);
@@ -891,8 +1042,7 @@ namespace pole_UI
 
             return result;
         }
-
-
+        
         public static void update_screen()
         {
             UI.X = Screen.width;
@@ -900,13 +1050,14 @@ namespace pole_UI
         }
         public static void update_input_lock()
         {
-            inmenu = money | market | cheat | job;
+            inmenu = money | market | cheat | job | bonus;
             if (inmenu)
             {
                 GUIManager.BlockInput(inmenu);
             }
             else
             {
+                GUIManager.BlockInput(inmenu);
                 GUIManager.BlockInput(inmenu);
                 GUIManager.BlockInput(inmenu);
                 GUIManager.BlockInput(inmenu);

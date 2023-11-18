@@ -32,6 +32,18 @@ using pole_ReadWrite;
 namespace pole_Bill
 {
 
+    public class U
+    {
+        public static void awake()
+        {
+
+        }
+        public static void update()
+        {
+
+        }
+    }
+
     public class Bill
     {
         ///BEFORE ADDING PARAMETERS CHECK s_modbill

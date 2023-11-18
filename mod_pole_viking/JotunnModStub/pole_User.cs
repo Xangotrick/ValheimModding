@@ -31,6 +31,18 @@ using pole_ReadWrite;
 
 namespace pole_User
 {
+    public class U
+    {
+        public static void awake()
+        {
+
+        }
+        public static void update()
+        {
+
+        }
+    }
+
     public class User
     {
         string _steamid;

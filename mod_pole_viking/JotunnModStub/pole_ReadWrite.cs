@@ -29,7 +29,18 @@ using Debug = UnityEngine.Debug;
 
 namespace pole_ReadWrite
 {
+    public class U
+    {
+        public static void awake()
+        {
 
+        }
+        public static void update()
+        {
+
+        }
+    }
+    
     public class CYPHER
     {
         private static int n = 5;

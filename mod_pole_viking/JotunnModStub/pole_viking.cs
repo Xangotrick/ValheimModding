@@ -34,6 +34,7 @@ using pole_User;
 using pole_Bill;
 using pole_ReadWrite;
 using pole_StatManager;
+using pole_Data;
 
 using static pole_RPC.RPC;
 
@@ -46,6 +47,7 @@ namespace pole_viking
     internal class pole_viking : BaseUnityPlugin
     {
 
+
         #region VAR statements
 
         public static bool isinserver = false;
@@ -56,7 +58,7 @@ namespace pole_viking
         ///MOD DETAILS
         public const string PluginGUID = "com.jotunn.pole_viking";
         public const string PluginName = "Pole Viking";
-        public const string PluginVersion = "0.0.01";
+        public const string PluginVersion = "0.0.02";
 
         /// VARIABLE CREATION
         private readonly Harmony harmony = new Harmony(PluginGUID);
@@ -66,18 +68,13 @@ namespace pole_viking
         public static List<JobManager> job_manager_local;
 
         /// GAME OBJECTS 
-
+        static GameObject objj;
 
         //RESSOURCES
-        public static Texture2D TEX_dark;
-        public static Texture2D TEX_white;
-        public static Texture2D TEX_black;
-        public static Texture2D TEX_trans;
-        public static Dictionary<string, Texture2D> TEX_Icons = new Dictionary<string, Texture2D>();
-        public static Dictionary<string, Texture2D> TEX_MyPNG = new Dictionary<string, Texture2D>();
-        private AssetBundle BUNDLE_UI;
         public static NumberFormatInfo floatinfo = new CultureInfo("en-US").NumberFormat;
         public static CustomLocalization Localizations = LocalizationManager.Instance.GetLocalization();
+
+
 
 
 
@@ -86,27 +83,19 @@ namespace pole_viking
         private void Awake()
         {
             isserver = (System.IO.File.Exists(dir_root + file_server));
-            MyRPC = NetworkManager.Instance.AddRPC("MyRPC", pole_RPC.RPC.MyRPCServerReceive, pole_RPC.RPC.MyRPCClientReceive);
-            Job.build_jobs();
 
+            pole_RPC.U.awake();
+            pole_jobs.U.awake();
+            pole_Data.U.awake();
             //LOAD RESSOURCES
-            load_assets();
-            PrefabManager.OnVanillaPrefabsAvailable += load_miner_assets;
+
+            PrefabManager.OnVanillaPrefabsAvailable += load_assets;
 
             if (isserver)
             {
             }
             else
             {
-
-                string jobstring = rw.load_save_textfile("r", "job.dat", "", JobManager.defaultsavevalue);
-                Debug.Log(jobstring);
-                List<string> jobstringlist = jobstring.Split(',').ToList();
-                job_manager_local = new List<JobManager>();
-                foreach(string astring in jobstringlist) { job_manager_local.Add(new JobManager(astring)); }
-                StatManager._bonus = new Bonus(5,5,5,5,5,5);
-                StatManager._jobmanager_list = job_manager_local;
-                StatManager.BuildList();
 
             }
 
@@ -139,71 +128,27 @@ namespace pole_viking
             cylinder.AddRequirement(new RequirementConfig("Wood", 2, 0, true));
 
             PieceManager.Instance.AddPiece(new CustomPiece(pieceBundle, "monolith01", fixReference: false, cylinder));
+
+
         }
         private void load_assets()
         {
+            pole_Data.Data.load_assets();
 
-            ///TEXTURES
-            TEX_dark = AssetUtils.LoadTexture("pole_viking_assets/dark.png");
-            TEX_trans = AssetUtils.LoadTexture("pole_viking_assets/trans.png");
-            TEX_black = AssetUtils.LoadTexture("pole_viking_assets/black.png");
-            TEX_white = AssetUtils.LoadTexture("pole_viking_assets/white.png");
-
-            GameObject game = new GameObject();
-
-            DirectoryInfo icondir = new DirectoryInfo("BepInEx/plugins/pole_viking_assets/raw_data/icons/");
-            FileInfo[] info = icondir.GetFiles("*.png");
-            foreach (FileInfo infofile in info)
-            {
-                TEX_Icons.Add(infofile.Name.ToLower().Replace(".png", ""), AssetUtils.LoadTexture(infofile.FullName));
-            }
-            DirectoryInfo customicondir = new DirectoryInfo("BepInEx/plugins/pole_viking_assets/raw_data/custom_icons/");
-            info = customicondir.GetFiles("*.png");
-            foreach (FileInfo infofile in info)
-            {
-                TEX_Icons.Add(infofile.Name.ToLower().Replace(".png", ""), AssetUtils.LoadTexture(infofile.FullName));
-            }
-
-            DirectoryInfo mypngdir = new DirectoryInfo("BepInEx/plugins/pole_viking_assets/PNG/");
-            info = mypngdir.GetFiles("*.png");
-            foreach (FileInfo infofile in info)
-            {
-                Debug.Log(infofile.Name.ToLower().Replace(".png", ""));
-                TEX_MyPNG.Add(infofile.Name.ToLower().Replace(".png",""), AssetUtils.LoadTexture(infofile.FullName));
-            }
-
-
-            BUNDLE_UI = AssetUtils.LoadAssetBundle("pole_viking_assets/tutskinbundle");
-            //TEX_job_front = AssetUtils.LoadTexture("pole_viking_assets/job_menu_front.png");
-            UI.skin1 = BUNDLE_UI.LoadAsset<GUISkin>("skintest");
-            UI.skin1.label.normal.background = TEX_dark;
-            ///OTHER
-            //UI.skin1 = AssetUtils.loadpref ("pole_viking_assets/dark.png");
+            PrefabManager.OnVanillaPrefabsAvailable -= load_assets;
         }
         
-        public static void load_miner_assets()
-        {// Use the vanilla beech tree prefab to render our icon from
-            
-            Debug.LogError("testfuckme");
-            Texture2D tex = TEX_Icons["copperoremoon"];
-            Sprite icon = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
 
 
-
-            // Create the custom item with the rendered icon
-            ItemConfig itemconfig = new ItemConfig();
-            itemconfig.Name = "$item_copperoremoon";
-            itemconfig.Description = "$item_copperoremoon";
-            itemconfig.Icons = new Sprite[] { icon };
-
-            CustomItem copperoremoon = new CustomItem("CopperOreMoon", "CopperOre", itemconfig);
-
-            ItemManager.Instance.AddItem(copperoremoon);
-
-            // You want that to run only once, Jotunn has the item cached for the game session
-
-            PrefabManager.OnVanillaPrefabsAvailable -= load_miner_assets;
+        [HarmonyPatch(typeof(Game), "SpawnPlayer")]
+        class SetAuras
+        {
+            static void Postfix(Player __result)
+            {
+                //GameObject.Instantiate(objj, __result.transform.position, Quaternion.identity, __result.transform);
+            }
         }
+
 
         private void OnGUI()
         {
@@ -227,11 +172,14 @@ namespace pole_viking
             {
                 ui_job();
             }
+            if(UI.bonus)
+            {
+                ui_upgrade();
+            }
             UI.dtstamp = Time.time;
         }
         private void Update()
         {
-            pole_StatManager.StatManager.Update();
             if (isserver)
             {
                 Update_Server();
@@ -241,10 +189,6 @@ namespace pole_viking
                 Update_Client();
             }
 
-            if (UnityInput.Current.GetKeyDown(KeyCode.T))
-            {
-                job_manager_local[0].xp += 500;
-            }
         }
 
         private void Update_Server()
@@ -273,6 +217,7 @@ namespace pole_viking
                     UI.money = false;
                     UI.market = false;
                     UI.job = false;
+                    UI.bonus = false;
                 }
                 return;
             }
@@ -295,70 +240,34 @@ namespace pole_viking
             {
                 UI.job = !UI.job;
             }
-            if (UnityInput.Current.GetKeyDown(KeyCode.U))
+            if (UnityInput.Current.GetKeyDown(KeyCode.T))
             {
-                if(trashmaterial == null)
+                job_manager_local[0].xp += 500;
+                StatManager._bonus._Health_bonus += 1;
+                StatManager.BuildList();
+            }
+            if (UnityInput.Current.GetKeyDown(KeyCode.R))
+            {
+                StatManager.BuildList();
+                GameObject objeeee = null;
+                foreach (Transform t in Player.m_localPlayer.transform)
                 {
-                    GameObject cop = PrefabManager.Instance.GetPrefab("rock4_copper");
-                    MeshRenderer meshrend = cop.transform.Find("model").GetComponent<MeshRenderer>();
-                    trashmaterial = meshrend.sharedMaterials[0];
-                    return;
-                }
-                trashmaterial.SetColor("_EmissionColor", 3 * new Vector4(UnityEngine.Random.Range(0f,1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f),1f));
-                Debug.Log((3 * new Vector4(UnityEngine.Random.Range(0, 1), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), 1)).ToString());
-                return;
-                
-
-                //DynamicGI.UpdateEnvironment();
-
-                /*
-                int a = 0;
-                foreach (var gameObj in FindObjectsOfType(typeof(GameObject)) as GameObject[])
-                {
-                    if (gameObj.name.ToLower().Contains("copper"))
+                    if (t.gameObject.name.Contains("testparticle"))
                     {
-                        foreach (Transform trans in gameObj.transform)
-                        {
-                            Debug.Log(trans.name);
-                        }
-                        a += 1;
+                        objeeee = t.gameObject;
+                        break;
                     }
-                    else
-                    {
-                        //Debug.Log(gameObj.name);
-                    }
-                }*/
-
-                GameObject troll = new GameObject();
-
-                PrefabManager.Instance.GetPrefab("Neck").GetComponent<Humanoid>().m_health = 1;
-                GameObject neck = CreatureManager.Instance.GetCreaturePrefab("Neck");
-                Humanoid huma = neck.GetComponent<Humanoid>();
-                huma.m_health = 1;
-                var newneckconfig = new CreatureConfig();
-                newneckconfig.Name = "$creature_neck";
-                newneckconfig.Faction = Character.Faction.ForestMonsters;
-                newneckconfig.UseCumulativeLevelEffects = true;
-                newneckconfig.AddSpawnConfig(new SpawnConfig
-                {
-                    SpawnChance = 20000,
-                    SpawnInterval = 1,
-                    SpawnDistance = 1,
-                    Biome = Heightmap.Biome.Meadows,
-                    MinLevel = 4,
-                    MaxLevel = 10
                 }
-                );
-                var necker = new CustomCreature("NeckTest", "Neck", newneckconfig);
-                CreatureManager.Instance.AddCreature(necker);
-
-                CreatureManager.OnVanillaCreaturesAvailable -= u_temp_Update;
-
+            }
+            if (UnityInput.Current.GetKeyDown(KeyCode.P))
+            {
+                UI.bonus = !UI.bonus;
             }
         }
         private void temp_On_Login()
         {
             Player.m_localPlayer.SetGodMode(true);
+
         }
 
 
@@ -374,7 +283,7 @@ namespace pole_viking
 
         public class Imanip
         {
-            public static void spawnItemMaxStack(string name, int quantity)
+            public static void spawnItemMaxStack(string name, int quantity, int quality = -1)
             {
                 int count = 1;
                 Vector3 vector = UnityEngine.Random.insideUnitSphere * ((count == 1) ? 0f : 0.5f);
@@ -388,6 +297,7 @@ namespace pole_viking
                 {
                     GameObject obj2 = UnityEngine.Object.Instantiate(obj, Player.m_localPlayer.transform.position + Player.m_localPlayer.transform.forward * 2f + Vector3.up + vector, Quaternion.identity);
                     obj2.GetComponent<ItemDrop>().SetStack(remainder);
+                    obj2.GetComponent<ItemDrop>().m_itemData.m_quality = quality;
                 }
                 if(numoffull > 0)
                 {
@@ -395,6 +305,7 @@ namespace pole_viking
                     {
                         GameObject obj2 = UnityEngine.Object.Instantiate(obj, Player.m_localPlayer.transform.position + Player.m_localPlayer.transform.forward * 2f + Vector3.up + vector, Quaternion.identity);
                         obj2.GetComponent<ItemDrop>().SetStack(maxstack);
+                        obj2.GetComponent<ItemDrop>().m_itemData.m_quality = quality;
                     }
                 }
             }

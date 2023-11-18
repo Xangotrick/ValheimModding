@@ -100,6 +100,9 @@
     <Reference Include="UnityEngine.AssetBundleModule">
       <HintPath>..\libs\UnityEngine.AssetBundleModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>..\libs\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\libs\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
@@ -109,6 +112,9 @@
     <Reference Include="UnityEngine.InputLegacyModule">
       <HintPath>..\libs\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.ParticleSystemModule">
+      <HintPath>..\libs\UnityEngine.ParticleSystemModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>..\libs\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
@@ -117,10 +123,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="j_mineur.cs" />
     <Compile Include="pole_StatManager.cs" />
     <Compile Include="pole_RPC.cs" />
     <Compile Include="pole_ReadWrite.cs" />
     <Compile Include="pole_Bill.cs" />
+    <Compile Include="pole_Data.cs" />
     <Compile Include="pole_User.cs" />
     <Compile Include="pole_UI.cs" />
     <Compile Include="pole_jobs.cs" />
