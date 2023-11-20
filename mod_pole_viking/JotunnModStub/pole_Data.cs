@@ -231,6 +231,26 @@ namespace pole_Data
             necki.AddComponent<AudioSource>().playOnAwake = false;
             necki.GetComponent<AudioSource>().clip = clip;
 
+
+            AssetBundle pieceBundle = AssetUtils.LoadAssetBundle("pole_viking_assets/monolith01");
+
+            PieceConfig cylinder = new PieceConfig();
+            cylinder.Name = "$cylinder_display_name";
+            cylinder.Description = "$cylinder_description";
+            cylinder.PieceTable = PieceTables.Hammer;
+            cylinder.CraftingStation = CraftingStations.Workbench;
+            cylinder.Category = PieceCategories.Misc;
+            cylinder.AddRequirement(new RequirementConfig("Wood", 2, 0, true));
+
+
+            PieceManager.Instance.AddPiece(new CustomPiece(pieceBundle, "monolith01", fixReference: false, cylinder));
+            SmelterConversionConfig blastConfig = new SmelterConversionConfig();
+            blastConfig.Station = "monolith01"; // Override the default "smelter" station of the SmelterConversionConfig
+            blastConfig.FromItem = "Wood";
+            blastConfig.ToItem = "Stone"; // This is our custom prefabs name we have loaded just above
+            PieceManager.Instance.GetPiece("monolith01").PiecePrefab.GetComponent<Smelter>().m_fuelItem = PrefabManager.Instance.GetPrefab("Stone").GetComponent<ItemDrop>();
+            ItemManager.Instance.AddItemConversion(new CustomItemConversion(blastConfig));
+
         }
 
 

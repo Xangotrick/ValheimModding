@@ -67,54 +67,6 @@ namespace pole_jobs
     }
     internal class __job: BaseUnityPlugin
     {
-        //[HarmonyPatch(typeof(ItemDrop.ItemData), nameof(ItemDrop.ItemData.GetDamage))]
-        //private class IncreaseDamageDone
-        //{
-        //    private static void Prefix(ItemDrop.ItemData __instance)
-        //    {
-        //        Debug.Log(__instance.TokenName());
-                /*
-                hitData.m_damage.m_pickaxe *= 1 + 20;
-                hitData.m_damage.m_pierce *= 1;
-                Debug.LogError(hitData.m_damage.m_pickaxe);
-                Debug.LogError(hitData.ToString());*/
-        //    }
-        //}
-
-        [HarmonyPatch(typeof(WearNTear), "RPC_Damage")]
-        internal class FindMonoDamage
-        {
-            private static void Prefix(WearNTear __instance, ref float hit)
-            {
-                Debug.LogError(__instance.name);
-                Debug.LogError("test");
-                if (__instance.name.ToLower().Contains("monolith"))
-                {
-                    Imanip.spawnItemMaxStack("Stone", 10);
-                }
-            }
-        }
-
-
-        [HarmonyPatch(typeof(MineRock5), "RPC_SetAreaHealth")]
-        internal class  SetMiningFlag
-        {
-            private static void Prefix(MineRock5 __instance, ref float health)
-            {
-                Debug.LogError(__instance.name);
-                Debug.LogError(health);
-                if(__instance.name.ToLower().Contains("copper") && health < 0 && job_manager_local[0].level >= 2 && EnvMan.instance.IsNight())
-                {
-                    Imanip.spawnItemMaxStack("CopperOreMoon", 1, -1) ;
-                }
-                if (__instance.name.ToLower().Contains("rock") && health < 0)
-                {
-                    Imanip.spawnItemMaxStack("CopperOreMoon", 1, 5);
-                    Imanip.spawnItemMaxStack("CopperOreMoon", 1, 2);
-                    Imanip.spawnItemMaxStack("Rock", 1, 1);
-                }
-            }
-        }
          
     }
 

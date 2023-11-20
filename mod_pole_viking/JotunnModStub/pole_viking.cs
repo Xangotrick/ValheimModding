@@ -117,20 +117,8 @@ namespace pole_viking
             PieceManager.Instance.AddPiece(makePiece);*/
 
 
-            AssetBundle pieceBundle = AssetUtils.LoadAssetBundle("pole_viking_assets/monolith01");
-
-            PieceConfig cylinder = new PieceConfig();
-            cylinder.Name = "$cylinder_display_name";
-            cylinder.Description = "$cylinder_description";
-            cylinder.PieceTable = PieceTables.Hammer;
-            cylinder.CraftingStation = CraftingStations.Workbench;
-            cylinder.Category = PieceCategories.Misc;
-            cylinder.AddRequirement(new RequirementConfig("Wood", 2, 0, true));
-
-            PieceManager.Instance.AddPiece(new CustomPiece(pieceBundle, "monolith01", fixReference: false, cylinder));
-
-
         }
+
         private void load_assets()
         {
             pole_Data.Data.load_assets();
@@ -279,8 +267,19 @@ namespace pole_viking
             Debug.LogError(datatosend);
             MyRPCSend("request_login", datatosend);
         }
-        
 
+
+        public static JobManager getjob(string name)
+        {
+            foreach(JobManager ajob in job_manager_local)
+            {
+                if (ajob.jobname == name)
+                {
+                    return ajob;
+                }
+            }
+            return null;
+        }
         public class Imanip
         {
             public static void spawnItemMaxStack(string name, int quantity, int quality = -1)
